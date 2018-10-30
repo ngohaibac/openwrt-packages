@@ -8,22 +8,25 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sqlite
-PKG_VERSION:=3081101
+PKG_VERSION:=3240000
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-autoconf-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://www.sqlite.org/2015/
-PKG_MD5SUM:=298c8d6af7ca314f68de92bc7a356cbe
+PKG_HASH:=d9d14e88c6fb6d68de9ca0d1f9797477d82fc3aed613558f87ffbdbbc5ceb74a
+PKG_SOURCE_URL:=http://www.sqlite.org/2018/
 
 PKG_LICENSE:=PUBLICDOMAIN
 PKG_LICENSE_FILES:=
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-autoconf-$(PKG_VERSION)
-PKG_BUILD_DEPENDS:=libncurses libreadline
 
 PKG_FIXUP:=autoreconf
 
 PKG_INSTALL:=1
+
+PKG_CONFIG_DEPENDS := \
+	CONFIG_SQLITE_FTS3 \
+	CONFIG_SQLITE_RTREE
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -43,7 +46,7 @@ define Package/libsqlite3
   $(call Package/sqlite3/Default)
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+libpthread
+  DEPENDS:=+libpthread +zlib
   TITLE+= (library)
 endef
 
@@ -51,6 +54,10 @@ define Package/libsqlite3/description
 $(call Package/sqlite3/Default/description)
  This package contains the SQLite (v3.x) shared library, used by other
  programs.
+endef
+
+define Package/libsqlite3/config
+  source "$(SOURCE)/Config.in"
 endef
 
 define Package/sqlite3-cli
@@ -69,11 +76,23 @@ $(call Package/sqlite3/Default/description)
 endef
 
 TARGET_CFLAGS += $(FPIC) \
-	-DSQLITE_ENABLE_UNLOCK_NOTIFY \
+	-DSQLITE_ENABLE_UNLOCK_NOTIFY=1 \
+	-DHAVE_ISNAN=1 \
+	-DHAVE_MALLOC_USABLE_SIZE=1
+
+ifneq ($(CONFIG_SQLITE_FTS3),y)
+TARGET_CFLAGS += -USQLITE_ENABLE_FTS3
+endif
+
+ifneq ($(CONFIG_SQLITE_RTREE),y)
+TARGET_CFLAGS += -USQLITE_ENABLE_RTREE
+endif
 
 CONFIGURE_ARGS += \
 	--enable-shared \
 	--enable-static \
+	--disable-editline \
+	--disable-static-shell
 
 CONFIGURE_VARS += \
 	config_BUILD_CC="$(HOSTCC)" \
