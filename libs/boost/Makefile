@@ -226,11 +226,8 @@ define Build/InstallDev
 		$(INSTALL_DIR) \
 			$(1)/usr/lib; \
 		$(CP) \
-			$(PKG_INSTALL_DIR)/lib/*.a \
-			$(1)/usr/lib/; \
-		$(CP) \
-			$(PKG_INSTALL_DIR)/lib/*.so* \
-			$(1)/usr/lib/; \
+			$(PKG_INSTALL_DIR)/lib/* \
+			$(1)/usr/lib/;
 	fi
 endef
 
