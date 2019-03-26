@@ -44,7 +44,7 @@ CONFIGURE_ARGS+= \
 	--with-alsa \
 	--without-asihpi \
 	--without-jack \
-	--with-oss \
+	--without-oss
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
